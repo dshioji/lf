@@ -1694,10 +1694,17 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			if curr == nil {
 				return nil
 			} else if !curr.IsDir() || gOpts.dirpreviews {
-				if tev.Buttons() != tcell.Button2 {
+				// Handle mouse wheel scroll in preview pane
+				switch tev.Buttons() {
+				case tcell.WheelDown:
+					return &callExpr{"preview-scroll-down", nil, 3}
+				case tcell.WheelUp:
+					return &callExpr{"preview-scroll-up", nil, 3}
+				case tcell.Button2:
+					return &callExpr{"open", nil, 1}
+				default:
 					return nil
 				}
-				return &callExpr{"open", nil, 1}
 			}
 
 			dir = nav.getDir(curr.path)

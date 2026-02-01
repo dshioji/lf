@@ -246,3 +246,52 @@ map <s-m-up> preview-scroll-up
 Use keyboard shortcuts instead:
 - `J` / `K` - scroll 1 line
 - `Shift+PgDn` / `Shift+PgUp` - scroll 1 page
+
+---
+
+## Issue 4: Mouse Wheel Over Preview Was Ignored
+
+### Root Cause
+In ui.go lines 1692-1700, when mouse is over preview pane with a file (not directory):
+```go
+} else if !curr.IsDir() || gOpts.dirpreviews {
+    if tev.Buttons() != tcell.Button2 {
+        return nil  // ALL events except middle-click ignored!
+    }
+    return &callExpr{"open", nil, 1}
+}
+```
+
+Mouse wheel events (`WheelUp`, `WheelDown`) were being discarded.
+
+### Fix
+Modified to handle wheel events in preview pane:
+```go
+} else if !curr.IsDir() || gOpts.dirpreviews {
+    switch tev.Buttons() {
+    case tcell.WheelDown:
+        return &callExpr{"preview-scroll-down", nil, 3}
+    case tcell.WheelUp:
+        return &callExpr{"preview-scroll-up", nil, 3}
+    case tcell.Button2:
+        return &callExpr{"open", nil, 1}
+    default:
+        return nil
+    }
+}
+```
+
+### Result
+Now **mouse wheel over preview pane scrolls the preview automatically** - no Shift key needed!
+
+## Final Keybindings Summary
+
+| Key | Action |
+|-----|--------|
+| `J` | scroll preview down 1 line |
+| `K` | scroll preview up 1 line |
+| `Shift+↓` | scroll preview down 1 line |
+| `Shift+↑` | scroll preview up 1 line |
+| `Shift+PgDn` | scroll preview down 1 page |
+| `Shift+PgUp` | scroll preview up 1 page |
+| MouseWheel over preview | scroll preview 3 lines |
