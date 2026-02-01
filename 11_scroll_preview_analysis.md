@@ -284,6 +284,46 @@ Modified to handle wheel events in preview pane:
 ### Result
 Now **mouse wheel over preview pane scrolls the preview automatically** - no Shift key needed!
 
+---
+
+## Issue 5: Mouse Wheel Keybindings Override Position Check
+
+### Root Cause
+In opts.go, mouse wheel is globally mapped:
+```go
+"<m-up>":   &callExpr{"up", nil, 1},    // line 289
+"<m-down>": &callExpr{"down", nil, 1},  // line 297
+```
+
+The event flow was:
+1. Mouse wheel event received
+2. Convert to `<m-up>` or `<m-down>`
+3. **Keybinding lookup FIRST** → finds `up`/`down` mapping
+4. Returns immediately → **never reaches position check**
+
+### Fix
+Check mouse position **before** keybinding lookup for wheel events:
+```go
+case *tcell.EventMouse:
+    // Check position first for wheel events
+    x, y := tev.Position()
+    wind, _ := ui.winAt(x, y)
+
+    // Handle mouse wheel over preview pane BEFORE keybinding lookup
+    if gOpts.preview && wind == len(ui.wins)-1 {
+        if tev.Buttons() == tcell.WheelDown || tev.Buttons() == tcell.WheelUp {
+            curr := nav.currFile()
+            if curr != nil && (!curr.IsDir() || gOpts.dirpreviews) {
+                if tev.Buttons() == tcell.WheelDown {
+                    return &callExpr{"preview-scroll-down", nil, 3}
+                }
+                return &callExpr{"preview-scroll-up", nil, 3}
+            }
+        }
+    }
+    // ... then continue with keybinding lookup for other cases
+```
+
 ## Final Keybindings Summary
 
 | Key | Action |
@@ -294,4 +334,5 @@ Now **mouse wheel over preview pane scrolls the preview automatically** - no Shi
 | `Shift+↑` | scroll preview up 1 line |
 | `Shift+PgDn` | scroll preview down 1 page |
 | `Shift+PgUp` | scroll preview up 1 page |
-| MouseWheel over preview | scroll preview 3 lines |
+| MouseWheel over preview | scroll preview 3 lines (position-aware) |
+| MouseWheel over file list | scroll files (unchanged) |

@@ -1636,6 +1636,23 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return nil
 		}
 
+		// Check position first for wheel events to handle preview pane scrolling
+		x, y := tev.Position()
+		wind, _ := ui.winAt(x, y)
+
+		// Handle mouse wheel over preview pane first (before keybinding lookup)
+		if gOpts.preview && wind == len(ui.wins)-1 {
+			if tev.Buttons() == tcell.WheelDown || tev.Buttons() == tcell.WheelUp {
+				curr := nav.currFile()
+				if curr != nil && (!curr.IsDir() || gOpts.dirpreviews) {
+					if tev.Buttons() == tcell.WheelDown {
+						return &callExpr{"preview-scroll-down", nil, 3}
+					}
+					return &callExpr{"preview-scroll-up", nil, 3}
+				}
+			}
+		}
+
 		var button string
 
 		switch tev.Buttons() {
@@ -1682,11 +1699,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return draw
 		}
 
-		x, y := tev.Position()
-		wind, w := ui.winAt(x, y)
-		if wind == -1 {
-			return nil
-		}
+		w := ui.wins[wind]
 
 		var dir *dir
 		if gOpts.preview && wind == len(ui.wins)-1 {
@@ -1694,17 +1707,10 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			if curr == nil {
 				return nil
 			} else if !curr.IsDir() || gOpts.dirpreviews {
-				// Handle mouse wheel scroll in preview pane
-				switch tev.Buttons() {
-				case tcell.WheelDown:
-					return &callExpr{"preview-scroll-down", nil, 3}
-				case tcell.WheelUp:
-					return &callExpr{"preview-scroll-up", nil, 3}
-				case tcell.Button2:
-					return &callExpr{"open", nil, 1}
-				default:
+				if tev.Buttons() != tcell.Button2 {
 					return nil
 				}
+				return &callExpr{"open", nil, 1}
 			}
 
 			dir = nav.getDir(curr.path)
