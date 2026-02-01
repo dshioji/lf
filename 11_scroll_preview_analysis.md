@@ -324,6 +324,29 @@ case *tcell.EventMouse:
     // ... then continue with keybinding lookup for other cases
 ```
 
+---
+
+## Issue 6: Added Shift+MouseWheel Fallback
+
+Since position detection over preview pane may not work reliably in all terminals (especially WSL/Windows Terminal), added Shift+MouseWheel as a fallback:
+
+```go
+isShiftHeld := tev.Modifiers()&tcell.ModShift != 0
+
+if isWheelEvent {
+    scrollPreview := false
+
+    // Method 1: Mouse over preview pane
+    if gOpts.preview && wind == len(ui.wins)-1 {
+        // ... position-based detection
+        scrollPreview = true
+    } else if isShiftHeld {
+        // Method 2: Shift held anywhere
+        scrollPreview = true
+    }
+}
+```
+
 ## Final Keybindings Summary
 
 | Key | Action |
@@ -335,4 +358,5 @@ case *tcell.EventMouse:
 | `Shift+PgDn` | scroll preview down 1 page |
 | `Shift+PgUp` | scroll preview up 1 page |
 | MouseWheel over preview | scroll preview 3 lines (position-aware) |
+| Shift+MouseWheel anywhere | scroll preview 3 lines (fallback) |
 | MouseWheel over file list | scroll files (unchanged) |

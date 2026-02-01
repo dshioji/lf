@@ -1639,17 +1639,29 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		// Check position first for wheel events to handle preview pane scrolling
 		x, y := tev.Position()
 		wind, _ := ui.winAt(x, y)
+		isWheelEvent := tev.Buttons() == tcell.WheelDown || tev.Buttons() == tcell.WheelUp
+		isShiftHeld := tev.Modifiers()&tcell.ModShift != 0
 
 		// Handle mouse wheel over preview pane first (before keybinding lookup)
-		if gOpts.preview && wind == len(ui.wins)-1 {
-			if tev.Buttons() == tcell.WheelDown || tev.Buttons() == tcell.WheelUp {
+		// Also handle Shift+wheel anywhere to scroll preview
+		if isWheelEvent {
+			scrollPreview := false
+
+			// Scroll preview if: mouse over preview pane OR shift is held
+			if gOpts.preview && wind == len(ui.wins)-1 {
 				curr := nav.currFile()
 				if curr != nil && (!curr.IsDir() || gOpts.dirpreviews) {
-					if tev.Buttons() == tcell.WheelDown {
-						return &callExpr{"preview-scroll-down", nil, 3}
-					}
-					return &callExpr{"preview-scroll-up", nil, 3}
+					scrollPreview = true
 				}
+			} else if isShiftHeld {
+				scrollPreview = true
+			}
+
+			if scrollPreview {
+				if tev.Buttons() == tcell.WheelDown {
+					return &callExpr{"preview-scroll-down", nil, 3}
+				}
+				return &callExpr{"preview-scroll-up", nil, 3}
 			}
 		}
 
