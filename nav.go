@@ -949,7 +949,12 @@ func (nav *nav) preview(path string, win *win, mode string) {
 		reader = bufio.NewReader(f)
 	}
 
-	lines, binary, sixel := readLines(reader, win.h)
+	// Read more lines than window height to enable scrolling (10x or min 500 lines)
+	maxLines := win.h * 10
+	if maxLines < 500 {
+		maxLines = 500
+	}
+	lines, binary, sixel := readLines(reader, maxLines)
 	if binary {
 		lines = []string{"\033[7mbinary\033[0m"}
 	}
