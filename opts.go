@@ -337,6 +337,8 @@ func init() {
 		"N":          &callExpr{"search-prev", nil, 1},
 		"J":          &callExpr{"preview-scroll-down", nil, 1},
 		"K":          &callExpr{"preview-scroll-up", nil, 1},
+		"<s-down>":   &callExpr{"preview-scroll-down", nil, 1},
+		"<s-up>":     &callExpr{"preview-scroll-up", nil, 1},
 		"<s-pgdn>":   &callExpr{"preview-page-down", nil, 1},
 		"<s-pgup>":   &callExpr{"preview-page-up", nil, 1},
 		"m":          &callExpr{"mark-save", nil, 1},
