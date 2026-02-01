@@ -341,6 +341,8 @@ func init() {
 		"<s-up>":     &callExpr{"preview-scroll-up", nil, 1},
 		"<s-pgdn>":   &callExpr{"preview-page-down", nil, 1},
 		"<s-pgup>":   &callExpr{"preview-page-up", nil, 1},
+		"<s-m-down>": &callExpr{"preview-scroll-down", nil, 3},
+		"<s-m-up>":   &callExpr{"preview-scroll-up", nil, 3},
 		"m":          &callExpr{"mark-save", nil, 1},
 		"'":          &callExpr{"mark-load", nil, 1},
 		`"`:          &callExpr{"mark-remove", nil, 1},

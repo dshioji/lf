@@ -1668,6 +1668,8 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		}
 		if tev.Modifiers() == tcell.ModCtrl {
 			button = "<c-" + button[1:]
+		} else if tev.Modifiers() == tcell.ModShift {
+			button = "<s-" + button[1:]
 		}
 		if expr, ok := keys[button]; ok {
 			return expr

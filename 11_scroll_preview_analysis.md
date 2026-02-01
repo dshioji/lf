@@ -158,4 +158,31 @@ for i, l := range lines {
 | previewScrollUp/Down | nav.go | New methods to modify offset |
 | printReg | ui.go | Render from offset position |
 | Commands | eval.go | 6 new preview scroll commands |
-| Keybindings | opts.go | J, K, Shift+arrows, Shift+PgUp/Dn |
+| Keybindings | opts.go | J, K, Shift+arrows, Shift+PgUp/Dn, Shift+mouse scroll |
+
+---
+
+## All Preview Scroll Keybindings
+
+| Key | Action |
+|-----|--------|
+| `J` | scroll preview down 1 line |
+| `K` | scroll preview up 1 line |
+| `Shift+↓` | scroll preview down 1 line |
+| `Shift+↑` | scroll preview up 1 line |
+| `Shift+PgDn` | scroll preview down 1 page |
+| `Shift+PgUp` | scroll preview up 1 page |
+| `Shift+MouseWheelDown` | scroll preview down 3 lines |
+| `Shift+MouseWheelUp` | scroll preview up 3 lines |
+
+### Mouse Scroll Implementation (ui.go)
+```go
+// Line 1669-1673
+if tev.Modifiers() == tcell.ModCtrl {
+    button = "<c-" + button[1:]
+} else if tev.Modifiers() == tcell.ModShift {
+    button = "<s-" + button[1:]
+}
+```
+
+Maps to `<s-m-up>` and `<s-m-down>` keybindings in opts.go.
