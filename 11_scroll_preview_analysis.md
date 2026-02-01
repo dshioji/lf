@@ -186,3 +186,63 @@ if tev.Modifiers() == tcell.ModCtrl {
 ```
 
 Maps to `<s-m-up>` and `<s-m-down>` keybindings in opts.go.
+
+---
+
+## Issue 3: Shift+MouseWheel Not Working
+
+### Potential Causes
+
+#### 1. Mouse Disabled (Most Likely)
+Mouse events are **disabled by default** in lf.
+
+**Fix:** Add to `~/.config/lf/lfrc`:
+```
+set mouse
+```
+
+#### 2. Terminal Compatibility (Windows Terminal / WSL)
+Some terminals don't send shift modifier with mouse scroll events. Windows Terminal may have this limitation.
+
+**How to Test:**
+Run lf_fork and try Shift+MouseWheel. If you see no error message at all, mouse events aren't being received (mouse disabled). If you see "unknown mapping: <m-down>", the shift modifier isn't being sent by terminal.
+
+#### 3. Debug: Check What Events Are Received
+The code at ui.go:1677-1678 shows error for unknown mappings:
+```go
+if button != "<m-1>" && button != "<m-2>" {
+    ui.echoerrf("unknown mapping: %s", button)
+}
+```
+
+If you see:
+- `unknown mapping: <m-down>` → Shift not sent by terminal
+- `unknown mapping: <s-m-down>` → Keybinding not found (shouldn't happen now)
+- No message → Mouse disabled OR event eaten by special handling
+
+### Configuration Required
+
+Add to `~/.config/lf/lfrc`:
+```
+# Enable mouse
+set mouse
+
+# Optional: explicit keybindings (already default in fork)
+map <s-m-down> preview-scroll-down
+map <s-m-up> preview-scroll-up
+```
+
+### Terminal-Specific Notes
+
+| Terminal | Shift+MouseWheel Support |
+|----------|-------------------------|
+| Windows Terminal (WSL) | May not work - terminal limitation |
+| Alacritty | Works |
+| iTerm2 | Works |
+| Kitty | Works |
+| xterm | Works with proper config |
+
+### Workaround if Terminal Doesn't Support Shift+Mouse
+Use keyboard shortcuts instead:
+- `J` / `K` - scroll 1 line
+- `Shift+PgDn` / `Shift+PgUp` - scroll 1 page
