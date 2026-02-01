@@ -258,7 +258,11 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		sxs.printSixel(win, screen, reg)
 	default:
 		st := tcell.StyleDefault
-		for i, l := range reg.lines {
+		lines := reg.lines
+		if reg.offset > 0 && reg.offset < len(lines) {
+			lines = lines[reg.offset:]
+		}
+		for i, l := range lines {
 			if i > win.h-1 {
 				break
 			}
@@ -741,6 +745,7 @@ type reg struct {
 	path     string
 	lines    []string
 	sixel    bool
+	offset   int
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {

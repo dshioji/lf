@@ -1028,6 +1028,18 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if app.nav.scrollDown(e.count) {
 			app.ui.loadFile(app, true)
 		}
+	case "preview-scroll-up":
+		app.nav.previewScrollUp(e.count)
+	case "preview-scroll-down":
+		app.nav.previewScrollDown(e.count)
+	case "preview-half-up":
+		app.nav.previewScrollUp(e.count * app.nav.height / 2)
+	case "preview-half-down":
+		app.nav.previewScrollDown(e.count * app.nav.height / 2)
+	case "preview-page-up":
+		app.nav.previewScrollUp(e.count * app.nav.height)
+	case "preview-page-down":
+		app.nav.previewScrollDown(e.count * app.nav.height)
 	case "updir":
 		resetIncCmd(app)
 		preChdir(app)

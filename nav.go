@@ -1127,6 +1127,51 @@ func (nav *nav) scrollDown(dist int) bool {
 	return old != dir.ind
 }
 
+func (nav *nav) previewScrollUp(dist int) bool {
+	curr := nav.currFile()
+	if curr == nil {
+		return false
+	}
+
+	reg, ok := nav.regCache[curr.path]
+	if !ok || reg.sixel {
+		return false
+	}
+
+	old := reg.offset
+	reg.offset -= dist
+	if reg.offset < 0 {
+		reg.offset = 0
+	}
+
+	return old != reg.offset
+}
+
+func (nav *nav) previewScrollDown(dist int) bool {
+	curr := nav.currFile()
+	if curr == nil {
+		return false
+	}
+
+	reg, ok := nav.regCache[curr.path]
+	if !ok || reg.sixel {
+		return false
+	}
+
+	old := reg.offset
+	maxOffset := len(reg.lines) - nav.height
+	if maxOffset < 0 {
+		maxOffset = 0
+	}
+
+	reg.offset += dist
+	if reg.offset > maxOffset {
+		reg.offset = maxOffset
+	}
+
+	return old != reg.offset
+}
+
 func (nav *nav) updir() error {
 	if len(nav.dirPaths) < 2 {
 		return nil
